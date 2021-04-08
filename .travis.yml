@@ -1,3 +1,9 @@
 language: node_js
 node_js:
   - "stable"
+
+install:
+ - npm install
+# command to run tests
+script:
+ - node analysis.js
