@@ -1,11 +1,9 @@
 var esprima = require("esprima");
 var options = {tokens:true, tolerant: true, loc: true, range: true };
 var fs = require("fs");
-
 function main()
 {
 	var args = process.argv.slice(2);
-
 	if( args.length == 0 )
 	{
 		args = ["analysis.js"];
@@ -13,20 +11,14 @@ function main()
 	var filePath = args[0];
 	
 	complexity(filePath);
-
 	// Report
 	for( var node in builders )
 	{
 		var builder = builders[node];
 		builder.report();
 	}
-
 }
-
-
-
 var builders = {};
-
 // Represent a reusable "class" following the Builder pattern.
 function FunctionBuilder()
 {
@@ -40,7 +32,6 @@ function FunctionBuilder()
 	this.MaxNestingDepth    = 0;
 	// The max number of conditions if one decision statement.
 	this.MaxConditions      = 0;
-
 	this.report = function()
 	{
 		console.log(
@@ -58,7 +49,6 @@ function FunctionBuilder()
 		);
 	}
 };
-
 // A builder for storing file level information.
 function FileBuilder()
 {
@@ -67,7 +57,6 @@ function FileBuilder()
 	this.Strings = 0;
 	// Number of imports in a file.
 	this.ImportCount = 0;
-
 	this.report = function()
 	{
 		console.log (
@@ -78,15 +67,12 @@ function FileBuilder()
 			).format( this.FileName, this.ImportCount, this.Strings ));
 	}
 }
-
 // A function following the Visitor pattern.
 // Annotates nodes with parent objects.
 function traverseWithParents(object, visitor)
 {
     var key, child;
-
     visitor.call(null, object);
-
     for (key in object) {
         if (object.hasOwnProperty(key)) {
             child = object[key];
@@ -98,37 +84,61 @@ function traverseWithParents(object, visitor)
         }
     }
 }
-
+function countConditions(node)
+{
+	var count = 0;
+	traverseWithParents(node, function(node) 
+	{
+		if ((node.type === "LogicalExpression") && ((node.operator === "&&") || (node.operator === "||")))
+		{
+			count++;
+		}
+	});
+	if (count > 0) {
+		count++;
+	}
+	return count;
+}
 function complexity(filePath)
 {
 	var buf = fs.readFileSync(filePath, "utf8");
 	var ast = esprima.parse(buf, options);
-
 	var i = 0;
-
 	// A file level-builder:
 	var fileBuilder = new FileBuilder();
 	fileBuilder.FileName = filePath;
 	fileBuilder.ImportCount = 0;
+	fileBuilder.Strings = 0;
 	builders[filePath] = fileBuilder;
-
 	// Tranverse program with a function visitor.
 	traverseWithParents(ast, function (node) 
 	{
 		if (node.type === 'FunctionDeclaration') 
 		{
 			var builder = new FunctionBuilder();
-
 			builder.FunctionName = functionName(node);
 			builder.StartLine    = node.loc.start.line;
-
 			builders[builder.FunctionName] = builder;
+			builder.ParameterCount = node.params.length;
+			var conditions = new Array();
+			traverseWithParents(node , function (node) {
+				//var subBuilder = new FunctionBuilder();
+				if (isDecision(node) === true) {
+					builder.SimpleCyclomaticComplexity += 1;
+					var temp = countConditions(node);
+					conditions.push(temp);
+				}
+			});
+			if (conditions.length > 0){
+				builder.MaxConditions = Math.max.apply(Math, conditions);
+			}
+			
 		}
-
+		if (node.type === 'Literal') {
+			fileBuilder.Strings += 1;
+		}
 	});
-
 }
-
 // Helper function for counting children of node.
 function childrenLength(node)
 {
@@ -147,8 +157,6 @@ function childrenLength(node)
 	}	
 	return count;
 }
-
-
 // Helper function for checking if a node is a "decision type node"
 function isDecision(node)
 {
@@ -159,7 +167,6 @@ function isDecision(node)
 	}
 	return false;
 }
-
 // Helper function for printing out function name.
 function functionName( node )
 {
@@ -169,7 +176,6 @@ function functionName( node )
 	}
 	return "anon function @" + node.loc.start.line;
 }
-
 // Helper function for allowing parameterized formatting of strings.
 if (!String.prototype.format) {
   String.prototype.format = function() {
@@ -182,19 +188,14 @@ if (!String.prototype.format) {
     });
   };
 }
-
 main();
-
 function Crazy (argument) 
 {
-
 	var date_bits = element.value.match(/^(\d{4})\-(\d{1,2})\-(\d{1,2})$/);
 	var new_date = null;
 	if(date_bits && date_bits.length == 4 && parseInt(date_bits[2]) > 0 && parseInt(date_bits[3]) > 0)
     new_date = new Date(parseInt(date_bits[1]), parseInt(date_bits[2]) - 1, parseInt(date_bits[3]));
-
     var secs = bytes / 3500;
-
       if ( secs < 59 )
       {
           return secs.toString().split(".")[0] + " seconds";
@@ -203,7 +204,7 @@ function Crazy (argument)
       {
           var mints = secs / 60;
           var remainder = parseInt(secs.toString().split(".")[0]) -
-(parseInt(mints.toString().split(".")[0]) * 60);
+			(parseInt(mints.toString().split(".")[0]) * 60);
           var szmin;
           if ( mints > 1 )
           {
@@ -214,16 +215,16 @@ function Crazy (argument)
               szmin = "minute";
           }
           return mints.toString().split(".")[0] + " " + szmin + " " +
-remainder.toString() + " seconds";
+			remainder.toString() + " seconds";
       }
       else
       {
           var mints = secs / 60;
           var hours = mints / 60;
           var remainders = parseInt(secs.toString().split(".")[0]) -
-(parseInt(mints.toString().split(".")[0]) * 60);
+			(parseInt(mints.toString().split(".")[0]) * 60);
           var remainderm = parseInt(mints.toString().split(".")[0]) -
-(parseInt(hours.toString().split(".")[0]) * 60);
+			(parseInt(hours.toString().split(".")[0]) * 60);
           var szmin;
           if ( remainderm > 1 )
           {
@@ -272,7 +273,7 @@ remainder.toString() + " seconds";
 				  return;
           }
           return hours.toString().split(".")[0] + " " + szhr + " " +
-mints.toString().split(".")[0] + " " + szmin;
+			mints.toString().split(".")[0] + " " + szmin;
       }
   }
  exports.complexity = complexity;
