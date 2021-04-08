@@ -1,4 +1,4 @@
-# Complexity & Travis-CI Lab
+# Complexity 
 
 In this lab, you'll be implementing simple algorithms for checking basic properties of code complexity.
 
