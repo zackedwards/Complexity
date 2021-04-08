@@ -57,7 +57,7 @@ The repository contains a stub that parses a javascript file and visits each fun
    a) **SimpleCyclomaticComplexity**: The number of if statements/loops + 1.
    b) **MaxConditions**: The max number of condition predicates (expressions seperated by `||`, `&&`) in an if statement.
 
-4. Check build status on Travis-CI when committing each new function. Submit a screenshot of the final build. (2 Points) 
+4. (SKIP THIS) Check build status on Travis-CI when committing each new function. Submit a screenshot of the final build. (2 Points) 
 
 5. Advanced (2 Extra Points)  
 
