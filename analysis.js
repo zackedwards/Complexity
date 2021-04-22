@@ -6,7 +6,7 @@ function main()
 	var args = process.argv.slice(2);
 	if( args.length == 0 )
 	{
-		args = ["analysis.js"];
+		args = ["mystery.js"];
 	}
 	var filePath = args[0];
 	
